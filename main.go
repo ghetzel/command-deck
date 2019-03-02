@@ -3,19 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/ghetzel/cli"
-	"github.com/ghetzel/go-stockutil/fileutil"
 	"github.com/ghetzel/go-stockutil/log"
-	"github.com/ghetzel/go-stockutil/stringutil"
-	"github.com/ghetzel/go-stockutil/typeutil"
 )
 
-const (
-	BackgroundChar = '-'
-)
+const defaultPS1 = `\u@\h \W \$ `
 
 func main() {
 	app := cli.NewApp()
@@ -30,6 +23,11 @@ func main() {
 			Value:  `debug`,
 			EnvVar: `LOGLEVEL`,
 		},
+		cli.StringFlag{
+			Name:  `config, c`,
+			Usage: `The configuration file to load.`,
+			Value: `~/.config/cdeck.yml`,
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -38,55 +36,12 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) {
-		segments := new(Segments)
-
-		if retcode := typeutil.Int(c.Args().First()); retcode != 0 {
-			segments.Append(retcode, 15, 1)
+		if config, err := LoadConfiguration(c.String(`config`)); err == nil {
+			config.Close()
+			fmt.Print(config.String())
+		} else {
+			fmt.Print(defaultPS1)
 		}
-
-		// append time
-		segments.Append(`${! date +%H:%M:%S !}`, 252, 240)
-
-		// append user@host
-		segments.Append(`${! whoami !}@${! hostname !}`, 15, 4)
-
-		// append pwd
-		segments.Append(`${! pwd | sed "s|$HOME|~|" !}`, 15, 64)
-
-		// append git status (if applicable)
-		if fileutil.IsNonemptyFile(`.git/HEAD`) {
-			vcscolor := 24
-
-			var ref string
-
-			if line, err := fileutil.ReadFirstLine(`.git/HEAD`); err == nil {
-				_, ref = stringutil.SplitPair(line, `: `)
-				ref = strings.TrimPrefix(ref, `refs/heads/`)
-			} else {
-				ref = `!ERR!`
-			}
-
-			gserr := make(chan error)
-
-			go func() {
-				_, err := x(`git`, `diff-index`, `--quiet`, `HEAD`)
-				gserr <- err
-			}()
-
-			select {
-			case err := <-gserr:
-				if err != nil {
-					vcscolor = 9 // dirty
-				}
-			case <-time.After(250 * time.Millisecond):
-				vcscolor = 240 // unknown
-			}
-
-			segments.Append(ref, 15, vcscolor)
-		}
-
-		segments.Close()
-		fmt.Print(segments.String())
 	}
 
 	app.Run(os.Args)

@@ -8,64 +8,106 @@ import (
 	"github.com/ghetzel/go-stockutil/typeutil"
 )
 
-var SegmentSeparator = "\uE0B0"
-var SegmentPadding = 1
-
 type Segment struct {
+	Name       string      `json:"name"`
+	Disable    bool        `json:"disable"`
+	Expression interface{} `json:"expr"`
+	FG         interface{} `json:"fg"`
+	BG         interface{} `json:"bg"`
+	Separator  string      `json:"separator,omitempty"`
+	Padding    int         `json:"padding,omitempty"`
+	Timeout    string      `json:"timeout,omitempty"`
+	OnlyIf     string      `json:"if,omitempty"`
 	prev       *Segment
-	expression interface{}
-	fg         interface{}
-	bg         interface{}
-	sep        string
-	padding    int
+	config     *Configuration
+	terminator bool
 }
 
-func NewSegment(prev *Segment, expression interface{}, fg interface{}, bg interface{}) *Segment {
-	return &Segment{
-		prev:       prev,
-		expression: expression,
-		fg:         fg,
-		bg:         bg,
-		sep:        SegmentSeparator,
-		padding:    SegmentPadding,
+func (self *Segment) previous() *Segment {
+	if self.prev != nil {
+		prev := self.prev
+
+		for !prev.enabled() {
+			prev = prev.prev
+
+			if prev == nil {
+				return nil
+			}
+		}
+
+		return prev
+	}
+
+	return nil
+}
+
+func (self *Segment) enabled() bool {
+	if self.terminator {
+		return true
+	} else if self.Disable {
+		return false
+	} else if xerr(self.OnlyIf) != nil {
+		return false
+	} else if typeutil.IsZero(self.Expression) {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (self *Segment) Foreground() string {
+	if typeutil.Int(self.FG) < 0 {
+		return `default`
+	} else {
+		return ExpandShell(typeutil.String(self.FG), self.Timeout)
+	}
+}
+
+func (self *Segment) Background() string {
+	if typeutil.Int(self.BG) < 0 {
+		return `default`
+	} else {
+		return ExpandShell(typeutil.String(self.BG), self.Timeout)
+	}
+}
+
+func (self *Segment) Sep() string {
+	if self.Separator != `` {
+		return self.Separator
+	} else if self.config != nil {
+		return self.config.Separator
+	} else {
+		return SegmentSeparator
 	}
 }
 
 func (self *Segment) String() string {
 	out := ``
+	fg := self.Foreground()
+	bg := self.Background()
 
-	if typeutil.Int(self.fg) < 0 {
-		self.fg = `default`
-	}
-
-	if typeutil.Int(self.bg) < 0 {
-		self.bg = `default`
-	}
-
-	if self.prev != nil {
-		out += "${" + typeutil.String(self.prev.bg) + ":" + typeutil.String(self.bg) + "}"
-		out += self.sep
-	}
-
-	expr := typeutil.String(self.expression)
-	justWhitespace := (len(strings.TrimSpace(expr)) == 0)
-
-	if expr != `` {
-		out += "${" + typeutil.String(self.fg) + ":" + typeutil.String(self.bg) + "}"
-
-		if !justWhitespace {
-			out += strings.Repeat(` `, self.padding)
+	if self.enabled() {
+		if prev := self.previous(); prev != nil {
+			out += "${" + prev.Background() + ":" + bg + "}"
+			out += self.Sep()
 		}
 
-		out += expr
+		if self.terminator {
+			out += "${reset} "
+		} else {
+			expr := typeutil.String(self.Expression)
 
-		if !justWhitespace {
-			out += strings.Repeat(` `, self.padding)
+			if expr != `` {
+				out += "${" + fg + ":" + bg + "}"
+				out += strings.Repeat(` `, self.Padding)
+				out += expr
+				out += strings.Repeat(` `, self.Padding)
+			}
+
+			out += "${reset}"
+			out = ExpandShell(out, self.Timeout)
 		}
 	}
-
-	out += "${reset}"
-	out = ExpandShell(out)
 
 	if fileutil.IsTerminal() {
 		out = log.CSprintf(out)

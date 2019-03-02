@@ -5,45 +5,84 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/ghetzel/go-stockutil/log"
 	"github.com/ghetzel/go-stockutil/rxutil"
-	"github.com/ghetzel/go-stockutil/stringutil"
+	"github.com/ghetzel/go-stockutil/timeutil"
 	"github.com/ghetzel/go-stockutil/typeutil"
 )
 
 var rxShellExpr = regexp.MustCompile(`(\$\{!\s*(?P<shell>[^!]+)\s*!\})`) // ${! SHELL !}
 
-func mustx(cmd string, args ...string) string {
-	if out, err := x(cmd, args...); err == nil {
+func shellx(shellcmd string) (string, error) {
+	cmd := `bash`
+
+	if s := os.Getenv(`SHELL`); s != `` {
+		cmd = s
+	}
+
+	return x(cmd, `-c`, shellcmd)
+}
+
+func mustx(shellcmd string) string {
+	if out, err := shellx(shellcmd); err == nil {
 		return out
 	} else {
-		log.Warningf("exec %v %s: %v", cmd, strings.Join(args, ` `), err)
+		log.Warningf("exec %s: %v", shellcmd, err)
 		return ``
+	}
+}
+
+func xerr(shellcmd string) error {
+	if shellcmd != `` {
+		_, err := shellx(shellcmd)
+		return err
+	} else {
+		return nil
 	}
 }
 
 func x(cmd string, args ...string) (string, error) {
 	command := exec.Command(cmd, args...)
 	command.Stdin = os.Stdin
+	command.Env = os.Environ()
 
 	out, err := command.Output()
 	return strings.TrimSpace(string(out)), err
 }
 
-func TerminalSize() (int, int) {
-	height, width := stringutil.SplitPair(mustx(`stty`, `size`), ` `)
+// func TerminalSize() (int, int) {
+// 	height, width := stringutil.SplitPair(mustx(`stty`, `size`), ` `)
+// 	return int(typeutil.Int(width)), int(typeutil.Int(height))
+// }
 
-	return int(typeutil.Int(width)), int(typeutil.Int(height))
-}
+func ExpandShell(in string, timeoutI interface{}) string {
+	timeout := 1 * time.Second
 
-func ExpandShell(in string) string {
+	if t, err := timeutil.ParseDuration(typeutil.String(timeoutI)); err == nil && t > 0 {
+		timeout = t
+	}
+
 	for {
 		if match := rxutil.Match(rxShellExpr, in); match != nil {
 			shell := match.Group(`shell`)
 
 			if shell != `` {
-				in = match.ReplaceGroup(1, mustx(`bash`, `-c`, shell))
+				outchan := make(chan string)
+
+				go func() {
+					outchan <- mustx(shell)
+				}()
+
+				select {
+				case out := <-outchan:
+					in = match.ReplaceGroup(1, out)
+
+				case <-time.After(timeout):
+					log.Noticef("exec %v: timeout", shell)
+					in = match.ReplaceGroup(1, ``)
+				}
 			}
 		} else {
 			break
