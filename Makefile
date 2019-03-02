@@ -20,3 +20,8 @@ test:
 
 build: fmt
 	go build -o bin/cdeck $(LOCALS)
+
+build-all:
+	GOOS=linux   go build -o ~/lib/apps/cdeck/linux/amd64/cdeck $(LOCALS)
+	GOOS=freebsd go build -o ~/lib/apps/cdeck/freebsd/amd64/cdeck $(LOCALS)
+	GOOS=darwin  go build -o ~/lib/apps/cdeck/darwin/amd64/cdeck $(LOCALS)

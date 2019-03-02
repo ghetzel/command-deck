@@ -20,8 +20,8 @@ func main() {
 		cli.StringFlag{
 			Name:   `log-level, L`,
 			Usage:  `Level of log output verbosity`,
-			Value:  `debug`,
-			EnvVar: `LOGLEVEL`,
+			Value:  `warning`,
+			EnvVar: `CDECK_LOGLEVEL`,
 		},
 		cli.StringFlag{
 			Name:  `config, c`,
@@ -36,6 +36,8 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) {
+		argv = c.Args()
+
 		if config, err := LoadConfiguration(c.String(`config`)); err == nil {
 			config.Close()
 			fmt.Print(config.String())

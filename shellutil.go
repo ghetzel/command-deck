@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"regexp"
@@ -14,6 +15,7 @@ import (
 )
 
 var rxShellExpr = regexp.MustCompile(`(\$\{!\s*(?P<shell>[^!]+)\s*!\})`) // ${! SHELL !}
+var argv []string
 
 func shellx(shellcmd string) (string, error) {
 	cmd := `bash`
@@ -47,6 +49,16 @@ func x(cmd string, args ...string) (string, error) {
 	command := exec.Command(cmd, args...)
 	command.Stdin = os.Stdin
 	command.Env = os.Environ()
+
+	for i, arg := range argv {
+		command.Env = append(command.Env, fmt.Sprintf("CDECK_ARGV_%d=%s", i+1, arg))
+	}
+
+	log.Debugf("exec %s %s:", cmd, strings.Join(args, ` `))
+
+	for _, ev := range command.Env {
+		log.Debugf("  %v", ev)
+	}
 
 	out, err := command.Output()
 	return strings.TrimSpace(string(out)), err
