@@ -27,11 +27,6 @@ Note that `$LASTEXIT` is not special in any way.  We capture the last exit statu
 
 ### "How do I get that cool looking chevron separator?"
 
-<figure style="float: right;">
-    <img src="contrib/chevron.png?raw=true" alt="uE0B0" />
-    <figcaption>"The Chevron"</figcaption>
-</figure>
-
 The "chevron" is actually a custom full-height character stored in the Private Use Area of pre-modified fonts.  You can find the fonts Powerline uses here: https://github.com/powerline/fonts.  The examples shown here are using _DejaVu Sans Mono for Powerline (Book)_.
 
 # Usage
