@@ -25,6 +25,10 @@ fi
 
 Note that `$LASTEXIT` is not special in any way.  We capture the last exit status via `$?` and store it in this variable, which is explicitly referenced in the configuration file.  If you don't need to get the last exit status, you can simply use `PROMPT_COMMAND='PS1=$(cdeck)'` instead.
 
+### "How do I get that cool looking chevron separator?"
+
+The "chevron" (&#x2B80;) is actually a custom full-height character stored in the Private Use Area of pre-modified fonts.  You can find the fonts Powerline uses here: https://github.com/powerline/fonts.  The examples shown here are using _DejaVu Sans Mono for Powerline (Book)_.
+
 # Usage
 
 CommandDeck is configured in two ways: via positional arguments in _eval_ mode (using the `--eval`/`-e` flag), or via a YAML configuration file located at `~/.config/cdeck.yml`.
