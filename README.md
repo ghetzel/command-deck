@@ -4,6 +4,11 @@
 
 Command Deck is a simple utility inspired by [Powerline](https://github.com/powerline/powerline) for creating simple, customizable terminal prompts that take advantage of Unicode and high-color terminal environments to create functional, beautiful, and data-rich command prompts.
 
+# Examples
+
+![Sample prompts](contrib/demo.png?raw=true)
+
+
 # Installation
 
 `go get github.com/ghetzel/command-deck`
@@ -40,7 +45,7 @@ segments:
     expr:    '${! pwd | sed "s|${HOME}|~|" !}'
 
 -   name:    git
-    if:      "git rev-parse --abbrev-ref HEAD"
+    if:      'git rev-parse --abbrev-ref HEAD'
     fg:      15
     bg:      "${! git diff-files --quiet && echo 24 || echo 9 !}"
     expr:    "${! git rev-parse --abbrev-ref HEAD !}"

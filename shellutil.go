@@ -31,7 +31,7 @@ func mustx(shellcmd string) string {
 	if out, err := shellx(shellcmd); err == nil {
 		return out
 	} else {
-		log.Warningf("exec %s: %v", shellcmd, err)
+		log.Noticef("exec %s: %v", shellcmd, err)
 		return ``
 	}
 }

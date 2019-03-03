@@ -17,6 +17,7 @@ type Segment struct {
 	Separator         string      `json:"separator,omitempty"`
 	Padding           int         `json:"padding,omitempty"`
 	Timeout           string      `json:"timeout,omitempty"`
+	NotIf             string      `json:"except,omitempty"`
 	OnlyIf            string      `json:"if,omitempty"`
 	ReverseJoinColors bool        `json:"reverse,omitempty"`
 	prev              *Segment
@@ -45,15 +46,29 @@ func (self *Segment) previous() *Segment {
 func (self *Segment) enabled() bool {
 	if self.terminator {
 		return true
-	} else if self.Disable {
-		return false
-	} else if xerr(self.OnlyIf) != nil {
-		return false
-	} else if typeutil.IsZero(self.Expression) {
-		return false
-	} else {
-		return true
 	}
+
+	if self.Disable {
+		return false
+	}
+
+	if self.NotIf != `` {
+		if xerr(self.NotIf) == nil {
+			return true
+		}
+	}
+
+	if self.OnlyIf != `` {
+		if xerr(self.OnlyIf) != nil {
+			return false
+		}
+	}
+
+	if typeutil.IsZero(self.Expression) {
+		return false
+	}
+
+	return true
 }
 
 func (self *Segment) Foreground() string {
