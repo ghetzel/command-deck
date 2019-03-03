@@ -47,7 +47,7 @@ segments:
 -   name:    git
     if:      'git rev-parse --abbrev-ref HEAD'
     fg:      15
-    bg:      "${! git diff-files --quiet && echo 24 || echo 9 !}"
+    bg:      '${! test -z "$(git status -s)" && echo 24 || echo 9 !}'
     expr:    "${! git rev-parse --abbrev-ref HEAD !}"
     timeout: 250ms
 ```
@@ -72,4 +72,4 @@ Output the current directory as returned from `pwd`, substiuting the first occur
 
 ### `git`
 
-Conditionally output a segment showing the current Git branch.  Foreground is white, background is determined by the exit status of `git diff-files --quiet`.  If it exits successfully, there are no modified files in the current repository and the background color will be ANSI #24 (DeepSkyBlue4).  If the command exits non-zero, there _are_ uncommitted changes and the background will be ANSI #9 (Red).  The commands must exit within 250ms or the segment will not be shown.  This is a protection measure against terminal slowdown caused by entering large, unindexed Git repositories.
+Conditionally output a segment showing the current Git branch.  Foreground is white, background is determined by the exit status of `test -z "$(git status -s)"`.  If it exits successfully, there are no modified files in the current repository and the background color will be ANSI #24 (DeepSkyBlue4).  If the command exits non-zero, there _are_ uncommitted changes and the background will be ANSI #9 (Red).  The commands must exit within 250ms or the segment will not be shown.  This is a protection measure against terminal slowdown caused by entering large, unindexed Git repositories.
