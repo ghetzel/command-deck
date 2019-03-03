@@ -27,7 +27,7 @@ Note that `$LASTEXIT` is not special in any way.  We capture the last exit statu
 
 ### "How do I get that cool looking chevron separator?"
 
-<figure>
+<figure style="float: right;">
     <img src="contrib/chevron.png?raw=true" alt="uE0B0" />
     <figcaption>"The Chevron"</figcaption>
 </figure>
