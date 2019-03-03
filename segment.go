@@ -72,7 +72,7 @@ func (self *Segment) enabled() bool {
 }
 
 func (self *Segment) Foreground() string {
-	if typeutil.Int(self.FG) < 0 {
+	if typeutil.Int(self.FG) < 0 || typeutil.String(self.FG) == `` {
 		return `default`
 	} else {
 		return ExpandShell(typeutil.String(self.FG), self.Timeout)
@@ -80,7 +80,7 @@ func (self *Segment) Foreground() string {
 }
 
 func (self *Segment) Background() string {
-	if typeutil.Int(self.BG) < 0 {
+	if typeutil.Int(self.BG) < 0 || typeutil.String(self.BG) == `` {
 		return `default`
 	} else {
 		return ExpandShell(typeutil.String(self.BG), self.Timeout)

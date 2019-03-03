@@ -15,7 +15,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = `cdeck`
 	app.Usage = `A fancy shell prompt.`
-	app.Version = `0.0.1`
+	app.Version = `0.0.2`
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -40,6 +40,10 @@ func main() {
 		cli.StringFlag{
 			Name:  `separator, s`,
 			Usage: `The default separator string to use.`,
+		},
+		cli.StringFlag{
+			Name:  `trailer, T`,
+			Usage: `The string to use for the trailing separator.`,
 		},
 	}
 
@@ -72,6 +76,10 @@ func main() {
 
 		if c.IsSet(`separator`) {
 			config.Separator = c.String(`separator`)
+		}
+
+		if c.IsSet(`trailer`) {
+			config.TrailingSeparator = c.String(`trailer`)
 		}
 
 		if config != nil {

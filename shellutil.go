@@ -14,7 +14,7 @@ import (
 	"github.com/ghetzel/go-stockutil/typeutil"
 )
 
-var rxShellExpr = regexp.MustCompile(`(\$\{!\s*(?P<shell>[^!]+)\s*!\})`) // ${! SHELL !}
+var rxShellExpr = regexp.MustCompile(`(\{!\s*(?P<shell>[^!]+)\s*!\})`) // {! SHELL !}
 var argv []string
 
 func shellx(shellcmd string) (string, error) {
