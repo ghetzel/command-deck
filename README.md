@@ -27,7 +27,7 @@ Note that `$LASTEXIT` is not special in any way.  We capture the last exit statu
 
 ### "How do I get that cool looking chevron separator?"
 
-The "chevron" (&#x2B80;) is actually a custom full-height character stored in the Private Use Area of pre-modified fonts.  You can find the fonts Powerline uses here: https://github.com/powerline/fonts.  The examples shown here are using _DejaVu Sans Mono for Powerline (Book)_.
+The "chevron" ([chevron](contrib/chevron.png?raw=true)) is actually a custom full-height character stored in the Private Use Area of pre-modified fonts.  You can find the fonts Powerline uses here: https://github.com/powerline/fonts.  The examples shown here are using _DejaVu Sans Mono for Powerline (Book)_.
 
 # Usage
 
