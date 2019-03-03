@@ -1,17 +1,35 @@
 package main
 
 import (
+	"os"
+
 	"github.com/ghetzel/go-stockutil/fileutil"
 	"github.com/ghodss/yaml"
 )
 
-var SegmentSeparator = "\uE0B0"
+var SegmentSeparator = func() string {
+	if os.Getenv(`XTERM_VERSION`) != `` {
+		return ``
+	} else {
+		return "\uE0B0"
+	}
+}()
+
 var SegmentPadding = 1
 
 type Configuration struct {
-	Segments  []*Segment `json:"segments"`
-	Separator string     `json:"separator"`
-	Padding   int        `json:"padding"`
+	Segments          []*Segment `json:"segments"`
+	Separator         string     `json:"separator"`
+	Padding           int        `json:"padding"`
+	TrailingSeparator string     `json:"trailer"`
+}
+
+func NewConfiguration() *Configuration {
+	return &Configuration{
+		Segments:  make([]*Segment, 0),
+		Separator: SegmentSeparator,
+		Padding:   SegmentPadding,
+	}
 }
 
 func LoadConfiguration(filename string) (*Configuration, error) {
@@ -43,11 +61,27 @@ func LoadConfiguration(filename string) (*Configuration, error) {
 	}
 }
 
+func (self *Configuration) Append(expr interface{}, fg interface{}, bg interface{}) {
+	var prev *Segment
+
+	if l := len(self.Segments); l > 0 {
+		prev = self.Segments[l-1]
+	}
+
+	self.Segments = append(self.Segments, &Segment{
+		Expression: expr,
+		FG:         fg,
+		BG:         bg,
+		config:     self,
+		prev:       prev,
+	})
+}
+
 func (self *Configuration) Close() error {
 	if len(self.Segments) > 0 {
 		self.Segments = append(self.Segments, &Segment{
-			FG:         -1,
-			BG:         -1,
+			FG:         `default`,
+			BG:         `default`,
 			config:     self,
 			terminator: true,
 			prev:       self.Segments[len(self.Segments)-1],

@@ -9,18 +9,19 @@ import (
 )
 
 type Segment struct {
-	Name       string      `json:"name"`
-	Disable    bool        `json:"disable"`
-	Expression interface{} `json:"expr"`
-	FG         interface{} `json:"fg"`
-	BG         interface{} `json:"bg"`
-	Separator  string      `json:"separator,omitempty"`
-	Padding    int         `json:"padding,omitempty"`
-	Timeout    string      `json:"timeout,omitempty"`
-	OnlyIf     string      `json:"if,omitempty"`
-	prev       *Segment
-	config     *Configuration
-	terminator bool
+	Name              string      `json:"name"`
+	Disable           bool        `json:"disable"`
+	Expression        interface{} `json:"expr"`
+	FG                interface{} `json:"fg"`
+	BG                interface{} `json:"bg"`
+	Separator         string      `json:"separator,omitempty"`
+	Padding           int         `json:"padding,omitempty"`
+	Timeout           string      `json:"timeout,omitempty"`
+	OnlyIf            string      `json:"if,omitempty"`
+	ReverseJoinColors bool        `json:"reverse,omitempty"`
+	prev              *Segment
+	config            *Configuration
+	terminator        bool
 }
 
 func (self *Segment) previous() *Segment {
@@ -72,12 +73,24 @@ func (self *Segment) Background() string {
 }
 
 func (self *Segment) Sep() string {
-	if self.Separator != `` {
+	if self.terminator && self.config != nil && self.config.TrailingSeparator != `` {
+		return self.config.TrailingSeparator
+	} else if self.Separator != `` {
 		return self.Separator
 	} else if self.config != nil {
 		return self.config.Separator
 	} else {
 		return SegmentSeparator
+	}
+}
+
+func (self *Segment) Pad() int {
+	if self.Padding > 0 {
+		return self.Padding
+	} else if self.config != nil {
+		return self.config.Padding
+	} else {
+		return 0
 	}
 }
 
@@ -88,7 +101,12 @@ func (self *Segment) String() string {
 
 	if self.enabled() {
 		if prev := self.previous(); prev != nil {
-			out += "${" + prev.Background() + ":" + bg + "}"
+			if self.ReverseJoinColors {
+				out += "${" + bg + ":" + prev.Background() + "}"
+			} else {
+				out += "${" + prev.Background() + ":" + bg + "}"
+			}
+
 			out += self.Sep()
 		}
 
@@ -99,9 +117,9 @@ func (self *Segment) String() string {
 
 			if expr != `` {
 				out += "${" + fg + ":" + bg + "}"
-				out += strings.Repeat(` `, self.Padding)
+				out += strings.Repeat(` `, self.Pad())
 				out += expr
-				out += strings.Repeat(` `, self.Padding)
+				out += strings.Repeat(` `, self.Pad())
 			}
 
 			out += "${reset}"
