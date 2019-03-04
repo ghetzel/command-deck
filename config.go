@@ -45,7 +45,10 @@ func LoadConfiguration(filename string) (*Configuration, error) {
 			TrailingSeparator: SegmentSeparator,
 		}
 
+		// parse the config
 		if err := yaml.Unmarshal(data, &config); err == nil {
+			// since the segments were populated from data, we need to run through and
+			// setup their unexported variables (pointers to config and their previous siblings)
 			for i, seg := range config.Segments {
 				seg.config = &config
 
@@ -67,6 +70,7 @@ func LoadConfiguration(filename string) (*Configuration, error) {
 	}
 }
 
+// Create a new segment and append it to the current segments list.
 func (self *Configuration) Append(expr interface{}, fg interface{}, bg interface{}) {
 	var prev *Segment
 
@@ -83,6 +87,7 @@ func (self *Configuration) Append(expr interface{}, fg interface{}, bg interface
 	})
 }
 
+// Append a terminator segment that resets everything.
 func (self *Configuration) Close() error {
 	if len(self.Segments) > 0 {
 		self.Segments = append(self.Segments, &Segment{
@@ -97,6 +102,7 @@ func (self *Configuration) Close() error {
 	return nil
 }
 
+// Get all segment strings as one big line suitable for printing.
 func (self *Configuration) String() string {
 	var out string
 

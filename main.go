@@ -15,7 +15,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = `cdeck`
 	app.Usage = `A fancy shell prompt.`
-	app.Version = `0.0.2`
+	app.Version = `0.0.3`
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
