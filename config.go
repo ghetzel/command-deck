@@ -22,6 +22,7 @@ type Configuration struct {
 	Separator         string     `json:"separator"`
 	Padding           int        `json:"padding"`
 	TrailingSeparator string     `json:"trailer"`
+	DisableTermEscape bool       `json:"noescape"`
 }
 
 func NewConfiguration() *Configuration {

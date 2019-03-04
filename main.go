@@ -45,6 +45,10 @@ func main() {
 			Name:  `trailer, T`,
 			Usage: `The string to use for the trailing separator.`,
 		},
+		cli.BoolFlag{
+			Name:  `disable-term-escape, E`,
+			Usage: `Disables wrapping color escape sequences with '\[' and '\]'`,
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -80,6 +84,10 @@ func main() {
 
 		if c.IsSet(`trailer`) {
 			config.TrailingSeparator = c.String(`trailer`)
+		}
+
+		if c.IsSet(`disable-term-escape`) {
+			config.DisableTermEscape = c.Bool(`disable-term-escape`)
 		}
 
 		if config != nil {

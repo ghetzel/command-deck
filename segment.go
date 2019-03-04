@@ -20,6 +20,7 @@ type Segment struct {
 	NotIf             string      `json:"except,omitempty"`
 	OnlyIf            string      `json:"if,omitempty"`
 	ReverseJoinColors bool        `json:"reverse,omitempty"`
+	DisableTermEscape bool        `json:"noescape"`
 	prev              *Segment
 	config            *Configuration
 	terminator        bool
@@ -142,7 +143,7 @@ func (self *Segment) String() string {
 		}
 	}
 
-	if fileutil.IsTerminal() {
+	if fileutil.IsTerminal() || self.DisableTermEscape || (self.config != nil && self.config.DisableTermEscape) {
 		out = log.CSprintf(out)
 	} else {
 		out = log.TermSprintf(out)
