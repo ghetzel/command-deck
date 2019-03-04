@@ -22,22 +22,27 @@ type Configuration struct {
 	Separator         string     `json:"separator"`
 	Padding           int        `json:"padding"`
 	TrailingSeparator string     `json:"trailer"`
-	DisableTermEscape bool       `json:"noescape"`
+	DisableEscape     bool       `json:"no_escape"`
+	DisableColor      bool       `json:"no_colors"`
 }
 
 func NewConfiguration() *Configuration {
 	return &Configuration{
-		Segments:  make([]*Segment, 0),
-		Separator: SegmentSeparator,
-		Padding:   SegmentPadding,
+		Segments:          make([]*Segment, 0),
+		Separator:         SegmentSeparator,
+		Padding:           SegmentPadding,
+		TrailingSeparator: SegmentSeparator,
+		DisableEscape:     true,
+		DisableColor:      true,
 	}
 }
 
 func LoadConfiguration(filename string) (*Configuration, error) {
 	if data, err := fileutil.ReadAll(fileutil.MustExpandUser(filename)); err == nil {
 		config := Configuration{
-			Separator: SegmentSeparator,
-			Padding:   SegmentPadding,
+			Separator:         SegmentSeparator,
+			Padding:           SegmentPadding,
+			TrailingSeparator: SegmentSeparator,
 		}
 
 		if err := yaml.Unmarshal(data, &config); err == nil {

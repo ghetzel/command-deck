@@ -20,7 +20,6 @@ type Segment struct {
 	NotIf             string      `json:"except,omitempty"`
 	OnlyIf            string      `json:"if,omitempty"`
 	ReverseJoinColors bool        `json:"reverse,omitempty"`
-	DisableTermEscape bool        `json:"noescape"`
 	prev              *Segment
 	config            *Configuration
 	terminator        bool
@@ -89,7 +88,7 @@ func (self *Segment) Background() string {
 }
 
 func (self *Segment) Sep() string {
-	if self.terminator && self.config != nil && self.config.TrailingSeparator != `` {
+	if self.terminator && self.config != nil {
 		return self.config.TrailingSeparator
 	} else if self.Separator != `` {
 		return self.Separator
@@ -101,7 +100,9 @@ func (self *Segment) Sep() string {
 }
 
 func (self *Segment) Pad() int {
-	if self.Padding > 0 {
+	if self.Padding < 0 {
+		return 0
+	} else if self.Padding > 0 {
 		return self.Padding
 	} else if self.config != nil {
 		return self.config.Padding
@@ -143,10 +144,14 @@ func (self *Segment) String() string {
 		}
 	}
 
-	if fileutil.IsTerminal() || self.DisableTermEscape || (self.config != nil && self.config.DisableTermEscape) {
-		out = log.CSprintf(out)
+	if self.config == nil || !self.config.DisableColor {
+		if fileutil.IsTerminal() || (self.config != nil && self.config.DisableEscape) {
+			out = log.CSprintf(out)
+		} else {
+			out = log.TermSprintf(out)
+		}
 	} else {
-		out = log.TermSprintf(out)
+		out = log.CStripf(out)
 	}
 
 	return out

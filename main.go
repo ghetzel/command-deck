@@ -46,6 +46,10 @@ func main() {
 			Usage: `The string to use for the trailing separator.`,
 		},
 		cli.BoolFlag{
+			Name:  `disable-color, C`,
+			Usage: `Disable outputting ANSI color escape sequences.`,
+		},
+		cli.BoolFlag{
 			Name:  `disable-term-escape, E`,
 			Usage: `Disables wrapping color escape sequences with '\[' and '\]'`,
 		},
@@ -86,8 +90,12 @@ func main() {
 			config.TrailingSeparator = c.String(`trailer`)
 		}
 
+		if c.IsSet(`disable-color`) {
+			config.DisableColor = c.Bool(`disable-color`)
+		}
+
 		if c.IsSet(`disable-term-escape`) {
-			config.DisableTermEscape = c.Bool(`disable-term-escape`)
+			config.DisableEscape = c.Bool(`disable-term-escape`)
 		}
 
 		if config != nil {
