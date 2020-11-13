@@ -46,7 +46,7 @@ func xerr(shellcmd string) error {
 }
 
 func x(cmd string, args ...string) (string, error) {
-	command := exec.Command(cmd, args...)
+	var command = exec.Command(cmd, args...)
 	command.Stdin = os.Stdin
 	command.Env = os.Environ()
 
@@ -70,7 +70,7 @@ func x(cmd string, args ...string) (string, error) {
 // }
 
 func ExpandShell(in string, timeoutI interface{}) string {
-	timeout := 1 * time.Second
+	var timeout time.Duration = 1 * time.Second
 
 	if t, err := timeutil.ParseDuration(typeutil.String(timeoutI)); err == nil && t > 0 {
 		timeout = t
@@ -81,7 +81,7 @@ func ExpandShell(in string, timeoutI interface{}) string {
 			shell := match.Group(`shell`)
 
 			if shell != `` {
-				outchan := make(chan string)
+				var outchan = make(chan string)
 
 				go func() {
 					outchan <- mustx(shell)

@@ -112,9 +112,9 @@ func (self *Segment) Pad() int {
 }
 
 func (self *Segment) String() string {
-	out := ``
-	fg := self.Foreground()
-	bg := self.Background()
+	var out string
+	var fg string = self.Foreground()
+	var bg string = self.Background()
 
 	if self.enabled() {
 		if prev := self.previous(); prev != nil {
@@ -130,7 +130,7 @@ func (self *Segment) String() string {
 		if self.terminator {
 			out += "${reset} "
 		} else {
-			expr := typeutil.String(self.Expression)
+			var expr = typeutil.String(self.Expression)
 
 			if expr != `` {
 				out += "${" + fg + ":" + bg + "}"

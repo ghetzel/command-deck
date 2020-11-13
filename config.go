@@ -2,8 +2,12 @@ package main
 
 import (
 	"os"
+	"strings"
 
+	"github.com/ghetzel/go-stockutil/executil"
 	"github.com/ghetzel/go-stockutil/fileutil"
+	"github.com/ghetzel/go-stockutil/log"
+	"github.com/ghetzel/go-stockutil/stringutil"
 	"github.com/ghodss/yaml"
 )
 
@@ -24,6 +28,8 @@ type Configuration struct {
 	TrailingSeparator string     `json:"trailer"`
 	DisableEscape     bool       `json:"no_escape"`
 	DisableColor      bool       `json:"no_colors"`
+	PreCommands       []string   `json:"precommands"`
+	PostCommands      []string   `json:"postcommands"`
 }
 
 func NewConfiguration() *Configuration {
@@ -106,11 +112,41 @@ func (self *Configuration) Close() error {
 func (self *Configuration) String() string {
 	var out string
 
+	for i, cmdline := range self.PreCommands {
+		if err := execAndEval(cmdline); err != nil {
+			log.Warningf("bad precommand %d: %v", i+1, err)
+		}
+	}
+
 	for _, seg := range self.Segments {
 		if seg.enabled() {
 			out += seg.String()
 		}
 	}
 
+	for i, cmdline := range self.PostCommands {
+		if err := execAndEval(cmdline); err != nil {
+			log.Warningf("bad postcommand %d: %v", i+1, err)
+		}
+	}
+
 	return out
+}
+
+func execAndEval(cmdline string) error {
+	if out, err := executil.ShellCommand(cmdline).Output(); err == nil {
+		for _, line := range stringutil.SplitLines(out, "\n") {
+			line = strings.TrimSpace(line)
+
+			var k, v = stringutil.SplitPair(line, `=`)
+
+			if k != `` && v != `` {
+				os.Setenv(k, v)
+			}
+		}
+
+		return nil
+	} else {
+		return err
+	}
 }
