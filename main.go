@@ -15,7 +15,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = `cdeck`
 	app.Usage = `A fancy shell prompt.`
-	app.Version = `0.0.3`
+	app.Version = `0.1.0`
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -25,13 +25,15 @@ func main() {
 			EnvVar: `CDECK_LOGLEVEL`,
 		},
 		cli.StringFlag{
-			Name:  `config, c`,
-			Usage: `The configuration file to load.`,
-			Value: `~/.config/cdeck.yml`,
+			Name:   `config, c`,
+			Usage:  `The configuration file to load.`,
+			Value:  `~/.config/cdeck.yml`,
+			EnvVar: `CDECK_CONFIG`,
 		},
 		cli.BoolFlag{
-			Name:  `eval, e`,
-			Usage: `Evaluate the patterns given on the command line instead of reading from the config file.`,
+			Name:   `eval, e`,
+			Usage:  `Evaluate the patterns given on the command line instead of reading from the config file.`,
+			EnvVar: `CDECK_EVAL`,
 		},
 		cli.IntFlag{
 			Name:  `padding, p`,
